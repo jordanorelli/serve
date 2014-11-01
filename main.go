@@ -36,7 +36,6 @@ func main() {
 	http.Handle("/", &logWrapper{http.FileServer(dir)})
 
 	addr := fmt.Sprintf("%s:%d", options.hostname, options.port)
-	log.Printf("init [pid: %d] [machineId: %x] [addr: %s] [cwd: %s]", global.pid, string(global.machineId), addr, cwd)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		bail(1, "unable to start server: %v", err)
 	}

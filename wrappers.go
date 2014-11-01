@@ -14,6 +14,11 @@ type logWrapper struct {
 }
 
 func (l *logWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/favicon.ico" {
+		l.Handler.ServeHTTP(w, r)
+		return
+	}
+
 	id := newRequestId()
 	if IsTerminal(os.Stdout.Fd()) {
 		log.Println(termcolors.WrapString(termcolors.Magenta, id.String()), r.Method, r.URL)
@@ -52,8 +57,8 @@ func (w *writerWatcher) PrettyStatus() string {
 		return s
 	}
 	switch {
-	case w.headerWritten < 100:
-		panic("wtf")
+	case w.headerWritten == 0:
+		return termcolors.WrapString(termcolors.Green, "200")
 	case w.headerWritten < 200:
 		return termcolors.WrapString(termcolors.White, s)
 	case w.headerWritten < 300:
