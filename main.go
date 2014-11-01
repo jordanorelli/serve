@@ -45,5 +45,6 @@ func main() {
 func init() {
 	flag.IntVar(&options.port, "port", 8000, "port to serve on")
 	flag.StringVar(&options.hostname, "host", "", "hostname")
+	log.SetOutput(os.Stdout)
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
 }
