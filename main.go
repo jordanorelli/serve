@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -32,10 +33,10 @@ func main() {
 		bail(1, "unable to get working directory: %v", err)
 	}
 	dir := http.Dir(cwd)
-	http.Handle("/", http.FileServer(dir))
+	http.Handle("/", &logWrapper{http.FileServer(dir)})
 
 	addr := fmt.Sprintf("%s:%d", options.hostname, options.port)
-    fmt.Printf("serving %s on %s\n", cwd, addr)
+	log.Printf("init [pid: %d] [machineId: %x] [addr: %s] [cwd: %s]", global.pid, string(global.machineId), addr, cwd)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		bail(1, "unable to start server: %v", err)
 	}
@@ -44,4 +45,5 @@ func main() {
 func init() {
 	flag.IntVar(&options.port, "port", 8000, "port to serve on")
 	flag.StringVar(&options.hostname, "host", "", "hostname")
+	log.SetFlags(log.Ldate | log.Lmicroseconds)
 }
