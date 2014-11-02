@@ -1,4 +1,4 @@
-package terminal
+package main
 
 // These constants are declared here, rather than importing
 // them from the syscall package as some syscall packages, even
