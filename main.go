@@ -6,7 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 )
 
 var options struct {
@@ -34,11 +37,29 @@ func main() {
 	}
 	dir := http.Dir(cwd)
 	http.Handle("/", &logWrapper{http.FileServer(dir)})
-
 	addr := fmt.Sprintf("%s:%d", options.hostname, options.port)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		bail(1, "unable to start server: %v", err)
-	}
+	go func() {
+		started := false
+		for i := 0; i < 30; i++ {
+			start := time.Now()
+			err := http.ListenAndServe(addr, nil)
+			if time.Since(start) > time.Second {
+				started = true
+				break
+			} else {
+				fmt.Fprintf(os.Stderr, "failed to start listener: %v\n", err)
+				time.Sleep(time.Second)
+			}
+		}
+		if !started {
+			bail(1, "never started successfully")
+		}
+	}()
+
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGINT)
+	<-s
+	fmt.Println("caught SIGINIT, shutting down")
 }
 
 func init() {
